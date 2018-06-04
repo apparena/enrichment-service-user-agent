@@ -1,4 +1,4 @@
-# Enrichment service boilerplate
+# Enrichment service User Agent
 
 ## Getting started
 

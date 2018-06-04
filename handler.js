@@ -1,5 +1,6 @@
-const AWS = require('aws-sdk');
-const util = require('util');
+const AWS    = require('aws-sdk');
+const util   = require('util');
+const parser = require('ua-parser-js');
 
 /**
  *
@@ -12,36 +13,25 @@ exports.index = async (event) => {
     level : process.env.LOG_LEVEL,
   });
   log.trace(
-    'Start "geoip" aggregation service: \n',
+    'Start "user-agent" aggregation service: \n',
     util.inspect(event),
   );
 
   try {
-    if (typeof event.context.ip === 'undefined') {
-      throw new Error('IP address not available in event.context');
+    if (typeof event.context.userAgent === 'undefined') {
+      throw new Error('userAgent not available in event.context');
     }
-    const geoip = require('geoip-lite');
-    const geo = geoip.lookup(event.context.ip);
-    if (geo) {
-      event.context.location = {};
-      event.context.location.city = geo.city;
-      event.context.location.country = geo.country;
-      event.context.location.latitude = geo.ll[0];
-      event.context.location.longitude = geo.ll[1];
-      event.context.location.ll = [geo.ll[1], geo.ll[0]];
-      log.debug('Geo location added to event.context: \n', util.inspect(event.context));
+
+    const result = parser(event.context.userAgent);
+    if (result) {
+      event.context.ua = result;
+      log.debug('User Agent information added to event.context: \n', util.inspect(result));
     } else {
-      log.debug('No Geo data available for the submitted IP.');
+      log.debug('No UserAgent data available for the submitted userAgent.');
     }
     return event;
   } catch (err) {
-    // Global error handling
-    console.error(`Error processing aggregation: ${err}`);
-    return {
-      statusCode : 500,
-      body       : JSON.stringify({
-        message : `Error processing aggregations: ${err}`,
-      }),
-    };
+    log.error(`Error processing aggregation: ${err}`);
+    throw new Error(err);
   }
 };

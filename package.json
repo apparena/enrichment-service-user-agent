@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "console-log-level": "^1.4.0",
-    "geoip-lite": "^1.2.1"
+    "ua-parser-js": "^0.7.18"
   },
   "devDependencies": {
     "aws-sdk": "^2.250.1",
